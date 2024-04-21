@@ -74,7 +74,6 @@ export default function Overview() {
                 <Text style={styles.modalTitle}>{selectedCharacter.name}</Text>
                 <Text style={styles.modalText}>Height: {selectedCharacter.height} cm</Text>
                 <Text style={styles.modalText}>Gender: {selectedCharacter.gender}</Text>
-                {/* Adicione mais detalhes conforme necessário */}
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={closeDetailsModal}>
