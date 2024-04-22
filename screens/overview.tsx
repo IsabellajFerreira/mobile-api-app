@@ -2,81 +2,94 @@ import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Modal, Image } from 'react-native';
-import { ScreenContent } from 'components/ScreenContent';
-import { RootStackParamList } from '../navigation';
- 
+import { RootStackParamList } from 'navigation';
+
 type Character = {
   name: string;
   height: string;
   gender: string;
+  hair_color: string;
+  eye_color: string;
+  birth_year: string;
   url: string;
 };
- 
+
 type OverviewScreenNavigationProps = StackNavigationProp<RootStackParamList, 'Overview'>;
- 
+
 export default function Overview() {
   const navigation = useNavigation<OverviewScreenNavigationProps>();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
- 
+
   useEffect(() => {
     const fetchCharacters = async () => {
       try {
-        const response = await fetch('https://swapi.dev/api/people/');
+        const response = await fetch('https://swapi.py4e.com/api/people/');
         const data = await response.json();
         setCharacters(data.results);
       } catch (error) {
         console.error('Error fetching Star Wars characters: ', error);
       }
     };
- 
+
     fetchCharacters();
   }, []);
- 
+
   const openDetailsModal = (character: Character) => {
     setSelectedCharacter(character);
   };
- 
+
   const closeDetailsModal = () => {
     setSelectedCharacter(null);
   };
- 
+
   return (
     <View style={styles.container}>
-      <ScreenContent path="screens/overview.tsx" title="Overview" />
-      <Text style={styles.title}>Star Wars Characters</Text>
+      <Text style={styles.title}>Personagens de Star Wars </Text>
       <FlatList
         data={characters}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <View style={styles.character}>
+          <TouchableOpacity
+            style={styles.character}
+            onPress={() => openDetailsModal(item)}
+          >
             <Image
               source={{ uri: `https://starwars-visualguide.com/assets/img/characters/${getImageId(item.url)}.jpg` }}
               style={styles.image}
             />
-            <Text style={styles.name}>{item.name}</Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => openDetailsModal(item)}>
-              <Text style={styles.buttonText}>Ver Detalhes</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.characterDetails}>
+              <Text style={styles.name}>{item.name}</Text>
+              <TouchableOpacity
+                style={styles.detailsButton}
+                onPress={() => openDetailsModal(item)}
+              >
+                <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         )}
       />
       <Modal
         visible={selectedCharacter !== null}
         animationType="slide"
-        transparent={true}>
+        transparent={true}
+        onRequestClose={closeDetailsModal}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             {selectedCharacter && (
               <>
                 <Text style={styles.modalTitle}>{selectedCharacter.name}</Text>
-                <Text style={styles.modalText}>Height: {selectedCharacter.height} cm</Text>
-                <Text style={styles.modalText}>Gender: {selectedCharacter.gender}</Text>
+                <Text style={styles.modalText}>Altura: {selectedCharacter.height} cm</Text>
+                <Text style={styles.modalText}>Gênero: {selectedCharacter.gender}</Text>
+                <Text style={styles.modalText}>Cor do cabelo: {selectedCharacter.hair_color}</Text>
+                <Text style={styles.modalText}>Cor dos olhos: {selectedCharacter.eye_color}</Text>
+                <Text style={styles.modalText}>Ano de Nascimento: {selectedCharacter.birth_year}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
-                  onPress={closeDetailsModal}>
+                  onPress={closeDetailsModal}
+                >
                   <Text style={styles.closeButtonText}>Fechar</Text>
                 </TouchableOpacity>
               </>
@@ -87,49 +100,56 @@ export default function Overview() {
     </View>
   );
 }
- 
+
 const getImageId = (url: string) => {
   const matches = url.match(/\/(\d+)\/$/);
   return matches ? matches[1] : null;
 };
- 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#663399',
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#ffffff',
+    textAlign: 'center',
   },
   character: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
-    padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    backgroundColor: '#ffffff',
+    padding: 10,
   },
   image: {
-    width: 150,
-    height: 150,
-    marginBottom: 10,
-    borderRadius: 75,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  characterDetails: {
+    flex: 1,
+    marginLeft: 10,
   },
   name: {
     fontSize: 18,
     fontWeight: 'bold',
   },
-  button: {
-    backgroundColor: '#007bff',
+  detailsButton: {
+    backgroundColor: '#663399',
     padding: 10,
     marginTop: 10,
     borderRadius: 5,
   },
-  buttonText: {
-    color: '#fff',
+  detailsButtonText: {
+    color: '#ffffff',
     textAlign: 'center',
   },
   modalContainer: {
@@ -139,7 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
     width: '80%',
@@ -149,19 +169,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#663399',
+    textAlign: 'center',
   },
   modalText: {
     fontSize: 16,
     marginBottom: 5,
+    color: '#333333',
   },
   closeButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#663399',
     padding: 10,
     marginTop: 20,
     borderRadius: 5,
   },
   closeButtonText: {
-    color: '#fff',
+    color: '#ffffff',
     textAlign: 'center',
   },
 });
+
